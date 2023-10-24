@@ -13,17 +13,26 @@ Globals:
     Tracing: Active
   Api:
     TracingEnabled: true
+Metadata: &esbuild_props
+  Minify: true
+  Target: es2020
+  Sourcemap: true
+  # External:
+  # - 'aws-sdk'
+  # - 'esbuild'
+  # - 'axios'
+  Packages: external
 Resources:
   CommonDependencies:
     Type: AWS::Serverless::LayerVersion
     Properties:
       LayerName: NpmLayer
       Description: NPM packages.
-      ContentUri: layers/npm-layer/
+      ContentUri: src/layers/npm-layer/
   GetLocalWeatherFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: weather/
+      CodeUri: src/weather/
       Handler: weather.getLocalWeather
       Runtime: nodejs18.x
       Layers:
@@ -36,18 +45,34 @@ Resources:
           Properties:
             Path: /weather
             Method: get
-    Metadata: # Manage esbuild properties
+    Metadata:
       BuildMethod: esbuild
       BuildProperties:
-        Minify: true
-        Target: es2020
-        Sourcemap: true
+        <<: *esbuild_props
         EntryPoints:
           - weather.ts
-        External:
-          - 'aws-sdk'
-          - 'esbuild'
-          - 'axios'
+  GetCurrencies:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/currency/
+      Handler: currency.getCurrencies
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonDependencies
+      Architectures:
+        - x86_64
+      Events:
+        GetCurrencies:
+          Type: Api
+          Properties:
+            Path: /currencies
+            Method: get
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        <<: *esbuild_props
+        EntryPoints:
+          - currency.ts
 # Outputs:
 #   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
 #   # Find out more about other implicit resources you can reference within SAM

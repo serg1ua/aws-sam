@@ -3,9 +3,9 @@ import AWS from 'aws-sdk';
 import axios from 'axios';
 
 const secretManagerClient = new AWS.SecretsManager();
+const baseUrl = 'https://currency-converter5.p.rapidapi.com';
 
-export const getLocalWeather = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  console.log('🚀 ~ file: weather.ts:8 ~ getLocalWeather ~ event:', event);
+export const getCurrencies = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     const { SecretString } = await secretManagerClient
       .getSecretValue({
@@ -14,13 +14,13 @@ export const getLocalWeather = async (event: APIGatewayProxyEvent): Promise<APIG
       .promise();
 
     const options = {
-      method: 'GET',
-      url: 'https://weatherapi-com.p.rapidapi.com/current.json',
-      params: { q: '53.1,-0.13' },
+      url: `${baseUrl}/currency/list`,
+      method: event.httpMethod,
       headers: {
         'X-RapidAPI-Key': JSON.parse(SecretString).rapidApiKey,
       },
     };
+
     const { data } = await axios.request(options);
     return {
       statusCode: 200,

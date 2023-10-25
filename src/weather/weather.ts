@@ -18,7 +18,7 @@ export const getLocalWeather = async (event: APIGatewayProxyEvent): Promise<APIG
       method: event.httpMethod,
       params: { q: event.queryStringParameters?.q },
       headers: {
-        'X-RapidAPI-Key': JSON.parse(SecretString).rapidApiKey,
+        'X-RapidAPI-Key': SecretString ? JSON.parse(SecretString).rapidApiKey : '',
       },
     };
 

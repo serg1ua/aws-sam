@@ -17,7 +17,7 @@ export const getCurrencies = async (event: APIGatewayProxyEvent): Promise<APIGat
       url: `${baseUrl}/currency/list`,
       method: event.httpMethod,
       headers: {
-        'X-RapidAPI-Key': JSON.parse(SecretString).rapidApiKey,
+        'X-RapidAPI-Key': SecretString ? JSON.parse(SecretString).rapidApiKey : '',
       },
     };
 

@@ -12,4 +12,5 @@ export default {
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   testMatch: ['**/tests/unit/*.test.ts'],
+  modulePaths: ['<rootDir>/src/layers/npm-layer/nodejs/node_modules/'],
 };

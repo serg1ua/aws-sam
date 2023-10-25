@@ -1,60 +1,30 @@
 import { describe, expect, it } from '@jest/globals';
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
+
 import { getLocalWeather } from '../../weather';
 
-describe('Unit test for app handler', function () {
+const axiosMock = new MockAdapter(axios);
+
+jest.mock('aws-sdk', () => ({
+  SecretsManager: jest.fn(() => ({ getSecretValue: jest.fn(() => ({ promise: () => 'secretString' })) })),
+}));
+
+describe('Unit test for weather handler', function () {
   it('verifies successful response', async () => {
-    const event: APIGatewayProxyEvent = {
-      httpMethod: 'get',
-      body: '',
-      headers: {},
-      isBase64Encoded: false,
-      multiValueHeaders: {},
-      multiValueQueryStringParameters: {},
-      path: '/weather',
-      pathParameters: {},
-      queryStringParameters: {},
-      requestContext: {
-        accountId: '123456789012',
-        apiId: '1234',
-        authorizer: {},
-        httpMethod: 'get',
-        identity: {
-          accessKey: '',
-          accountId: '',
-          apiKey: '',
-          apiKeyId: '',
-          caller: '',
-          clientCert: {
-            clientCertPem: '',
-            issuerDN: '',
-            serialNumber: '',
-            subjectDN: '',
-            validity: { notAfter: '', notBefore: '' },
-          },
-          cognitoAuthenticationProvider: '',
-          cognitoAuthenticationType: '',
-          cognitoIdentityId: '',
-          cognitoIdentityPoolId: '',
-          principalOrgId: '',
-          sourceIp: '',
-          user: '',
-          userAgent: '',
-          userArn: '',
-        },
-        path: '/weather',
-        protocol: 'HTTP/1.1',
-        requestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
-        requestTimeEpoch: 1428582896000,
-        resourceId: '123456',
-        resourcePath: '/hello',
-        stage: 'dev',
+    const event = {
+      httpMethod: 'GET',
+      queryStringParameters: {
+        q: 'Kyiv',
       },
-      resource: '',
-      stageVariables: {},
-    };
+    } as unknown as APIGatewayProxyEvent;
+
+    axiosMock.onGet('https://weatherapi-com.p.rapidapi.com/current.json').reply(200, {});
+
     const result: APIGatewayProxyResult = await getLocalWeather(event);
 
     expect(result.statusCode).toEqual(200);
+    expect(JSON.parse(result.body)).toBeInstanceOf(Object);
   });
 });

@@ -1,60 +1,27 @@
 import { describe, expect, it } from '@jest/globals';
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
+
 import { getCurrencies } from '../../currency';
 
-describe('Unit test for app handler', function () {
+const axiosMock = new MockAdapter(axios);
+
+jest.mock('aws-sdk', () => ({
+  SecretsManager: jest.fn(() => ({ getSecretValue: jest.fn(() => ({ promise: () => 'secretString' })) })),
+}));
+
+describe('Unit test for currency handler', function () {
   it('verifies successful response', async () => {
-    const event: APIGatewayProxyEvent = {
-      httpMethod: 'get',
-      body: '',
-      headers: {},
-      isBase64Encoded: false,
-      multiValueHeaders: {},
-      multiValueQueryStringParameters: {},
-      path: '/currencies',
-      pathParameters: {},
-      queryStringParameters: {},
-      requestContext: {
-        accountId: '123456789012',
-        apiId: '1234',
-        authorizer: {},
-        httpMethod: 'get',
-        identity: {
-          accessKey: '',
-          accountId: '',
-          apiKey: '',
-          apiKeyId: '',
-          caller: '',
-          clientCert: {
-            clientCertPem: '',
-            issuerDN: '',
-            serialNumber: '',
-            subjectDN: '',
-            validity: { notAfter: '', notBefore: '' },
-          },
-          cognitoAuthenticationProvider: '',
-          cognitoAuthenticationType: '',
-          cognitoIdentityId: '',
-          cognitoIdentityPoolId: '',
-          principalOrgId: '',
-          sourceIp: '',
-          user: '',
-          userAgent: '',
-          userArn: '',
-        },
-        path: '/currencies',
-        protocol: 'HTTP/1.1',
-        requestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
-        requestTimeEpoch: 1428582896000,
-        resourceId: '123456',
-        stage: 'dev',
-        resourcePath: '',
-      },
-      resource: '',
-      stageVariables: {},
-    };
+    const event = {
+      httpMethod: 'GET',
+    } as APIGatewayProxyEvent;
+
+    axiosMock.onGet('https://currency-converter5.p.rapidapi.com/currency/list').reply(200, {});
+
     const result: APIGatewayProxyResult = await getCurrencies(event);
 
     expect(result.statusCode).toEqual(200);
+    expect(JSON.parse(result.body)).toBeInstanceOf(Object);
   });
 });

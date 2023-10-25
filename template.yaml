@@ -73,3 +73,25 @@ Resources:
         <<: *esbuild_props
         EntryPoints:
           - currency.ts
+  ConvertCurrency:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/currency/
+      Handler: currency.convertCurrency
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonDependencies
+      Architectures:
+        - x86_64
+      Events:
+        ConvertCurrency:
+          Type: Api
+          Properties:
+            Path: /currencies/convert
+            Method: get
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        <<: *esbuild_props
+        EntryPoints:
+          - currency.ts
